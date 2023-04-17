@@ -1,5 +1,4 @@
 import 'package:sqflite/sqflite.dart';
-
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'dart:async';
@@ -27,6 +26,16 @@ class Contact {
     return database;
   }
 
+  static Future<List<Map<String, dynamic>>> getContacts() async {
+    var db = await getDatabase();
+    return db.query('contacts', orderBy: 'id');
+  }
+
+  static Future<Map<String, dynamic>> getItem(int id) async {
+    var db = await getDatabase();
+    return db.query('contacts', where: 'id = ?', whereArgs: [id], limit: 1);
+  }
+  
   Future<int> insert() async {
     var db = await getDatabase();
 
@@ -35,5 +44,31 @@ class Contact {
     contactMap['age'] = age;
 
     return db.insert('contacts', contactMap);
+  }
+
+  Future<int> updateItem() async {
+    var db = await getDatabase();
+
+    final data = {
+      'name' : this.name,
+      'age' : this.age
+    }
+
+    try{
+      return await db.update('contacts', data, where: 'id = ?', whereArgs: [this.id]);    
+    } catch (err) {
+      debugPrint(err);
+    }
+
+  }
+
+  Future<void> deleteItem(int id) async {
+    var db = await getDatabase();
+
+    try{
+      await db.delete('contacts', where: 'id = ?', whereArgs: [id]);
+    } catch (err) {
+      debugPrint(err);
+    }
   }
 }
